@@ -13,13 +13,98 @@ chrome Lighthouse规则，前端的性能指标有：
 - TTI(time to interactive)：TTI是指页面变得可交互所需的时间
 - TTD(Time to display)：TTD是指页面显示所需的时间
 
+其中，我们需要重点关注的是FCP,LCP,TTI  
+
 有了标准以后，我们再进行性能检测，确认我们项目中最需要优化的地方  
 性能检测的方式有以下几种：
 
 - lightouse
-- performance API 检测
+- performance API 检测, 现在是用`performance.getEntireType()`api来查看，例如：`performance.getEntireType('navigation')[0].toJSON()` 可以查看navigation的性能参数
 - 控制台 devtools
 - node 侧：ab 压力测试端口+node --prof 启动会创建 log 日志 之后 使用 node --prof-process 生成耗时日志
+
+## FCP的优化  
+
+
+想要优化FCP，首先需要直到浏览器的渲染流程：  
+1. 解析HTML形成DOM树  
+2. 解析CSS形成CSSOM树  
+3. DOM树和CSSOM树形成Render Tree
+4. 根据Render Tree来布局，计算每个节点的位置  
+5. 调用GPU渲染进程，渲染页面  
+
+想要提高FCP的性能，我们就得快速让浏览器渲染第一个dom元素。因为浏览器中渲染进程和JS进程都是单线程的，这意味着同一时间只能执行一个任务，如果渲染进程和JS进程同时进行，会导致两者之间出现竞争条件和死锁等问题。所以在某个时刻只有一个进程处于活动状态，所以我们需要避免css，js文件阻塞渲染，其中的优化点有：
+
+> 优化点1：异步加载或者延迟加载JS文件，让浏览器在解析HTML的同时下载JS，而不是暂停解析：  
+
+**编译时**
+
+1. 使用`entry`配置手动的分离代码，指定多个入口文件，每个入口文件对应一个bundle  
+2. 使用`import()`动态的分离代码，让webpack自动地根据代码中的import() 语句进行代码分割，生成一个或多个chunk，可以实现按需加载或者懒加载，提高性能和用户体验  
+
+
+**运行时**
+
+1.使用async属性，让浏览器在下载js时继续解析html，但是一旦下载完成，就会暂停解析并执行脚本，这种方法适用于不依赖其他脚本的独立运行的脚本，因为他们的执行顺序时不确定的。  
+2.使用defer属性，让浏览器在下载js时继续解析html，并且等待执行脚本，直到html解析完成。这种方法可以保证脚本按照他们在页面中出现的顺序执行，适用于需要等待页面解析和依赖其他脚本的情况。 
+3. 让js最后加载，即将script标签放在body标签的最后面，这样可以确保在加载和执行js之前，页面的其他内容已经呈现出来。
+
+
+> 优化点2：在拉入css文件的链接元素上使用media属性，以识别有条件的css资源 
+
+在link元素上使用media属性，可以指定该元素链接的样式表或者其他资源适用于哪些媒体类型或媒体查询。这样可以让浏览器根据当前的设备或情况，选择性地加载或应用不同的资源，从而提高性能和用户体验。  
+
+
+> 优化点3： 确定呈现首屏内容所需的样式，并与HTML内联发送这些样式，避免使用@import引入css
+
+
+**编译时**
+
+webpack实现 Cirtical Path CSS Generator 的一种方法是使用critters-webpack-plugin，这是一个webpack插件，可以内联你的应用的关键路劲的css，并且延迟加载剩余的css。它的工作原理是：你在webpack配置中添加这个插件，并设置一些可选的配置项，然后她会自动处理你的html文件，将关键路径css内联到head标签中，将其他css文件通过js异步加载。
+
+
+**运行时**
+
+内联首屏关键css是指对网站首屏内容进行样式设计的css，并将其放在html的head标签中的style标签里，这样可以减少http请求和渲染阻塞，提高页面的加载速度和用户体验。  
+
+
+
+> 优化点4：移除未使用的css代码，避免加载不必要的样式 
+
+
+**编译时**
+
+使用webpack移除未使用的css代码，安装`purgecss-webpack-plugin`，可以分析html和js文件，并从css文件中删除未使用的样式 
+
+
+> 优化点5： 极简化 HTML、CSS 和 JavaScript 文件，去除无关的字符和空格，减小文件大小
+
+
+**编译时**
+
+代码压缩，在webpack 5中 mode为production时会自动开启压缩，使用的两个插件  
+- css-minimizer-webpack-plugin
+- terser-webpack-plugin 
+
+> 优化点6：使用CDN
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 从输入 url 到看到页面的过程中，会经历：
 
