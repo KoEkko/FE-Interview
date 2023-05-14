@@ -19,7 +19,7 @@ chrome Lighthouse规则，前端的性能指标有：
 性能检测的方式有以下几种：
 
 - lightouse
-- performance API 检测, 现在是用`performance.getEntireType()`api来查看，例如：`performance.getEntireType('navigation')[0].toJSON()` 可以查看navigation的性能参数
+- performance API 检测, 现在是用`performance.getEntriesByType()`api来查看，例如：`performance.getEntriesByType('navigation')[0].toJSON()` 可以查看navigation的性能参数
 - 控制台 devtools
 - node 侧：ab 压力测试端口+node --prof 启动会创建 log 日志 之后 使用 node --prof-process 生成耗时日志
 
