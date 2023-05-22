@@ -35,3 +35,31 @@
 # http和https的区别
 
 # 对称加密和非对称加密
+
+
+# token 和 cookie 的区别
+
+
+1. 存储位置：cookie存储在浏览器的cookie中，而token通常存储在客户端的localStorage 和 sessionStorage
+
+2. 数据大小：cookie的数据大小通常限制在4KB左右，而token可以存储更多的数据
+
+3. 安全性：cookie的安全性相对较差，容易受到跨站脚本攻击(XSS)和跨站请求伪造(CSRF)等攻击，token通过使用数字签名或加密算法来确保安全性，可以有效的防止这些攻击
+
+4.跨域支持：cookie在跨域请求时需要进行额外的配置才能生效，而token可以跨域使用，可以方便地在不同域名之间传递身份信息
+
+5.服务端存储：cookie是由服务器生成并存储在客户端，每次请求时会自动携带到服务端。而token由客户端生成并存储在本地，每次请求时需要手动将token添加到请求头中。
+
+
+# token存储的位置
+
+
+Token一般存在localStorage中而不是sessionStorage中。
+
+localStorage和sessionStorage都是HTML5提供的存储API，可以在浏览器端存储数据。它们的主要区别在于数据的生命周期和作用域。
+
+localStorage的数据会一直存在，除非被手动删除或浏览器清除缓存。而sessionStorage的数据只在当前会话中存在，一旦关闭浏览器窗口或标签页，数据就会被清除。
+
+由于Token通常用于身份验证和授权，需要在多个会话中保持持久性，因此选择localStorage存储更为合适。而sessionStorage适用于临时保存数据，只在当前会话中有效。
+
+需要注意的是，将Token存储在localStorage中存在一些安全风险，例如受到XSS攻击或窃取Token的风险。因此，应该使用加密算法对Token进行加密，或者使用HttpOnly标记的Cookie存储Token，以提高安全性。
