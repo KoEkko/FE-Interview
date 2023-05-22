@@ -75,8 +75,53 @@ JS中的事件循环机制指的是JS运行时如何处理事件和异步代码�
 # 原型与原型链
 
 
+在js中，每个对象都有一个原型对象，原型对象又有自己的原型对象，这样就形成了一个原型链。原型链是一个对象属性的查找机制，如果一个对象无法在自身属性中找到某个属性，那么它会去它的原型对象中查找，如果还找不到，就会继续往原型链上层查找，直到找到该属性或者到达原型链的顶层。
+
+一个对象的原型可以通过__proto__属性来访问，也可以通过Object.getPrototypeOf()。
+
+原型对象可以用来实现继承，通过让一个构造函数的原型对象指向另一个构造函数的实例，可以让一个对象从另一个对象中继承属性和方法。
+
+
 # 防抖节流的实现
 
+```js
+
+// 防抖
+function debounce(fn,delay) {
+  let timer = null
+  return function(...args) {
+    timer = setTimeout(() => {
+      fn.apply(this,args)
+    }, delay)
+  }
+}
+
+
+// 节流
+function throttle(fn,delay) {
+  let waiting = false, lastArgs = null
+
+  return function(...args) {
+    if(!waiting) {
+      fn.apply(this,args)
+      waiting = true
+      let timeout = () => setTimeout(() => {
+        waiting = false
+        if(lastArgs) {
+          fn.apply(this,lastArgs)
+          waiting = true
+          lastArgs = null
+          timeout()
+        }
+      },delay)
+      timeout()
+    } else {
+      lastArgs = args 
+    }
+  }
+}
+
+```
 
 
 # 深拷贝和浅拷贝
@@ -96,7 +141,15 @@ JS中的事件循环机制指的是JS运行时如何处理事件和异步代码�
 6. 箭头函数不绑定自己的arguments对象，因此访问arguments会引用父级作用域中的arguments对象
 
 # localStorage 和 sessionStorage 的区别
-  
+
+localStorage 和 sessionStorage 都是用来存储数据的方法，他们都可以在浏览器端存储数据，而且都是以键值对的形式存储  
+
+他们的区别在于：
+1. 存储数据的生命周期不同：localStorage 存储的数据没有过期时间，会一直存在与浏览器中，直到被手动删除；而sessionStorage存储的数据只在当前会话下有效，当用户关闭浏览器窗口或标签页时，数据会被清除。
+2. 存储数据的作用域不同：localStorage存储的数据在同一域名下的所有页面都可以共享访问；而sessionStorage存储的数据只能在同一浏览器窗口或标签页中共享访问，不同窗口或标签页之间的数据是隔离的。
+3. 存储数据的大小限制不同：localStorage的存储容量一般比sessionStorage大，可以存储更多的数据，但具体容量限制因浏览器而异
+
+
 
 # 递归遇到循环引用怎么办
 
@@ -109,6 +162,11 @@ JS中的事件循环机制指的是JS运行时如何处理事件和异步代码�
 
 # 浏览器缓存
 
+浏览器缓存是指浏览器在访问网页时，会将一些静态资源缓存在本地硬盘或内存中，以便下次访问同一网页时可以直接从缓存中获取资源，从而提高访问速度和用户体验。  
+
+浏览器缓存分为强缓存和协商缓存  
+1. 强缓存：浏览器在第一次请求资源的时候，会先检查该资源的缓存标识（如HTTP头中的Cache-Control和Expires字段），如果缓存标识在规定的时间范围内有效，则直接从缓存中获取资源，不再向服务器发送请求，这样可以快速加载页面。
+2. 协商缓存：当强缓存失效时，浏览器会向服务器发送一个请求，询问该资源是否有更新。服务器会检查资源的最后修改时间（如HTTP头中的Last-Modified字段）和ETag值（如HTTP头中的ETag字段）等信息，如果资源没有更新，则服务器返回304状态码，告诉浏览器可以使用本地缓存的资源，否则返回新的资源内容
 
 # SSR原理
 
